@@ -3,11 +3,12 @@ import { getSiteById, updateSite, deleteSite } from '@/lib/database/queries';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const id = parseInt(params.id);
-    const site = getSiteById(id);
+    const { id } = await params;
+    const siteId = parseInt(id);
+    const site = getSiteById(siteId);
 
     if (!site) {
       return NextResponse.json(
@@ -28,13 +29,14 @@ export async function GET(
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const id = parseInt(params.id);
+    const { id } = await params;
+    const siteId = parseInt(id);
     const body = await request.json();
 
-    updateSite(id, body);
+    updateSite(siteId, body);
 
     return NextResponse.json({ success: true });
   } catch (error) {
@@ -48,11 +50,12 @@ export async function PUT(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const id = parseInt(params.id);
-    deleteSite(id);
+    const { id } = await params;
+    const siteId = parseInt(id);
+    deleteSite(siteId);
 
     return NextResponse.json({ success: true });
   } catch (error) {

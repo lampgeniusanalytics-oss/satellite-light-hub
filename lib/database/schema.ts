@@ -2,8 +2,11 @@ import Database from 'better-sqlite3';
 import path from 'path';
 import fs from 'fs';
 
-// Database path
-const dbPath = path.join(process.cwd(), 'database', 'satellite-hub.db');
+// Database path - use /tmp on Vercel (serverless), local path otherwise
+const isVercel = process.env.VERCEL === '1';
+const dbPath = isVercel
+  ? '/tmp/satellite-hub.db'
+  : path.join(process.cwd(), 'database', 'satellite-hub.db');
 
 // Ensure database directory exists
 if (!fs.existsSync(path.dirname(dbPath))) {
@@ -15,6 +18,30 @@ export const db = new Database(dbPath);
 
 // Enable foreign keys
 db.pragma('foreign_keys = ON');
+
+// Auto-initialize on Vercel
+let isInitialized = false;
+
+function ensureInitialized() {
+  if (!isInitialized) {
+    try {
+      // Check if tables exist
+      const tables = db.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name='users'").get();
+      if (!tables) {
+        console.log('🔧 Auto-initializing database on Vercel...');
+        setupDatabase();
+      }
+      isInitialized = true;
+    } catch (error) {
+      console.error('Error checking database:', error);
+    }
+  }
+}
+
+// Call ensureInitialized when database is imported
+if (isVercel) {
+  ensureInitialized();
+}
 
 // Database schema initialization
 export function initializeDatabase() {

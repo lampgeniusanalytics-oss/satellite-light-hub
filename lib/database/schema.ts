@@ -25,22 +25,37 @@ let isInitialized = false;
 function ensureInitialized() {
   if (!isInitialized) {
     try {
+      console.log('🔍 Checking database initialization...');
       // Check if tables exist
       const tables = db.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name='users'").get();
       if (!tables) {
-        console.log('🔧 Auto-initializing database on Vercel...');
+        console.log('🔧 Auto-initializing database (tables not found)...');
         setupDatabase();
+        console.log('✅ Database initialized successfully');
+      } else {
+        console.log('✅ Database already initialized');
       }
       isInitialized = true;
     } catch (error) {
-      console.error('Error checking database:', error);
+      console.error('❌ Error during database initialization:', error);
+      // Try to initialize anyway
+      try {
+        setupDatabase();
+        isInitialized = true;
+        console.log('✅ Database initialized after retry');
+      } catch (retryError) {
+        console.error('❌ Failed to initialize database on retry:', retryError);
+      }
     }
   }
 }
 
 // Call ensureInitialized when database is imported
 if (isVercel) {
+  console.log('🚀 Running on Vercel, auto-initializing database...');
   ensureInitialized();
+} else {
+  console.log('💻 Running locally');
 }
 
 // Database schema initialization

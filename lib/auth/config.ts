@@ -11,21 +11,31 @@ export const authOptions: NextAuthOptions = {
         password: { label: "Password", type: "password" }
       },
       async authorize(credentials) {
-        if (!credentials?.username || !credentials?.password) {
+        try {
+          console.log('🔐 Attempting authentication for user:', credentials?.username);
+
+          if (!credentials?.username || !credentials?.password) {
+            console.log('❌ Missing credentials');
+            return null;
+          }
+
+          const user = await validateCredentials(credentials.username, credentials.password);
+
+          if (user) {
+            console.log('✅ Authentication successful for user:', user.username);
+            return {
+              id: user.id.toString(),
+              name: user.username,
+              email: user.username,
+            };
+          }
+
+          console.log('❌ Invalid credentials');
+          return null;
+        } catch (error) {
+          console.error('❌ Error during authentication:', error);
           return null;
         }
-
-        const user = await validateCredentials(credentials.username, credentials.password);
-
-        if (user) {
-          return {
-            id: user.id.toString(),
-            name: user.username,
-            email: user.username,
-          };
-        }
-
-        return null;
       }
     })
   ],

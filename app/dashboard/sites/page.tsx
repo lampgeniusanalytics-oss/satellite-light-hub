@@ -70,6 +70,29 @@ export default function SitesPage() {
     }
   };
 
+  const handleGenerate = async (id: number) => {
+    if (!confirm('Generate site files? This will create a complete site structure in the generated-sites folder.')) return;
+
+    try {
+      const res = await fetch('/api/generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ siteId: id }),
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        alert(`Site generated successfully!\n\nLocation: ${data.path}`);
+      } else {
+        const error = await res.json();
+        alert(`Generation failed: ${error.details || error.error}`);
+      }
+    } catch (error) {
+      console.error('Error generating site:', error);
+      alert('Failed to generate site');
+    }
+  };
+
   return (
     <div>
       <div className="mb-6 flex justify-between items-center">
@@ -158,6 +181,13 @@ export default function SitesPage() {
                       title="Sync RSS Feed"
                     >
                       Sync
+                    </button>
+                    <button
+                      onClick={() => handleGenerate(site.id)}
+                      className="text-purple-600 hover:text-purple-700"
+                      title="Generate Site Files"
+                    >
+                      Generate
                     </button>
                     <Link href={`/dashboard/sites/${site.id}`} className="text-blue-600 hover:text-blue-700">
                       Edit

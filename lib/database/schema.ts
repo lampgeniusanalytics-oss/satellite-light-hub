@@ -221,7 +221,7 @@ export function seedGlobalCategories() {
       continue;
     }
 
-    let parentId = cat.parent_id;
+    let parentId: number | null | undefined = cat.parent_id;
     if ('parent' in cat && cat.parent) {
       parentId = categoryMap[cat.parent];
     }
